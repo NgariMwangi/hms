@@ -1,0 +1,117 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container">
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary mb-3 mt-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        ADD BILL
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Register Patient</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/bill" method="POST" >
+                        <fieldset>
+                            <div class="dropdown">
+                                <label for="">Choose service or product Offered</label>
+                                <select name="service_offered">
+                                  {% for inventor in inventory %}
+                                  <option value="{{inventor.name}}">
+                                    {{inventor.name}} - {{inventor.selling_price}} 
+                                  </option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+                            
+                            <hr class="colorgraph">
+                            <div class="row">
+                                <div class="col-xs-6 col-sm-6 col-md-6">
+                                    <input type="submit" class="btn btn-lg btn-success btn-block" value="ADD BILL">
+                                </div>
+                                
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="button" class="btn btn-primary mb-3 mt-3" data-bs-toggle="modal" data-bs-target="#exampleModal1">
+        PAY BILL
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Register Patient</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/paybill" method="POST" >
+                        <fieldset>
+                            <h2>ADD BILL</h2>
+                            <hr class="colorgraph">
+                            <div class="form-group">
+                                <input type="text" name="service_offered" id="name" class="form-control input-lg"
+                                     value="Paid">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" name="cost" id="cost" class="form-control input-lg"
+                                    placeholder="Amount PAID">
+                            </div>
+                            
+                            <hr class="colorgraph">
+                            <div class="row">
+                                <div class="col-xs-6 col-sm-6 col-md-6">
+                                    <input type="submit" class="btn btn-lg btn-success btn-block" value="ADD BILL">
+                                </div>
+                                
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- this is the code for the table -->
+    <table id="myTable" class="table">
+        <thead>
+            <tr>
+                <th scope="col">Service Offered</th>
+                <th scope="col">Cost</th>
+                <th scope="col">Time Of Offering</th>
+              
+            </tr>
+        </thead>
+        <tbody>
+            {% for charge in charges %}
+            <tr>
+                <td>{{charge.service_offered}}</td>
+                <td>{{charge.cost}}</td>
+                <td>{{charge.time_of_offering}}</td>
+               
+              
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="col-md-3">
+        <div class="card-counter success">
+          <i class="fa fa-users"></i>
+          <span class="count-name">BALANCE</span>
+          <span class="count-numbers">KSH:   {{ total_cost }}</span>
+          
+        </div>
+      </div>
+</div>
+
+{% endblock %}
