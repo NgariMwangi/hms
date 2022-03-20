@@ -13,5 +13,5 @@ class Patient(db.Model):
     guardian_name=db.Column(db.String(80), unique=False, nullable=True)
     guardian_phone_no=db.Column(db.String(80), unique=False, nullable=True)
     appointments = db.relationship('Appointment', backref='patients', lazy=True)
-    appointments = db.relationship('Charges', backref='patients', lazy=True)
-    appointments = db.relationship('Visitors', backref='patients', lazy=True)
+    appointmen = db.relationship('Charges', backref='patients', lazy=True)
+    appointme = db.relationship('Visitors', backref='patients', lazy=True)

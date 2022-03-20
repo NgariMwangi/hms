@@ -5,13 +5,19 @@ from werkzeug.security import generate_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import os
+from datetime import date
 from sqlalchemy import func
+import psycopg2
 
 app = Flask(__name__)
 
 from configs.base_config import *
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:deno0707@localhost:5432/hotd'
 app.config["SECRET_KEY"] = "#deno0707@mwangi"
+conn = psycopg2.connect(user="postgres", password="deno0707", host="localhost", port="5432", database="hotd")
+#Open a cursor to perform database operations
+cur = conn.cursor()
+
 # app.config.from_object(Development)
 
 
@@ -29,7 +35,9 @@ from utils.init_roles import *
 # db.create_all()
 @app.before_first_request
 def create_tables():
+    # db.drop_all()
     db.create_all()
+
     seeding()
 
 
@@ -58,7 +66,14 @@ def dashboard():
     staff_count = Staff.query.count()
     doctor_count = Staff.query.filter_by(role = 2).count()
     appointment_count = Appointment.query.count()
-    
+    appoinments=Appointment.query.all()
+    print(appoinments)
+    for appointment in appoinments:
+        print(appointment.patients.first_name)
+    visitors=Visitors.query.all()
+    print(visitors)
+    for visitor in visitors:
+        print(visitor.patients.first_name)
 
     return render_template('dashboard.html', logged_in = logged_in, first_name = first_name, last_name = last_name, patient_count = patient_count, staff_count = staff_count, appointment_count = appointment_count, doctor_count = doctor_count)
 
@@ -321,6 +336,7 @@ def patient_appointments(x):
         last_name = session['last_name']
 
         return render_template('patient_appointments.html', appointments = patient_appointments, logged_in = logged_in, first_name = first_name, last_name = last_name)
+
 
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
