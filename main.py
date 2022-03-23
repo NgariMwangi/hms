@@ -32,6 +32,123 @@ from models.visitors import Visitors
 from models.inventory import Inventory
 from utils.init_roles import *
 
+
+class Appointment(db.Model):
+    __tablename__ = 'appointments'    
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
+    patient = db.Column(db.Integer, db.ForeignKey('patients.id'))
+    doctor = db.Column(db.Integer, db.ForeignKey('staff.id'))
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=False)
+    triage_report = db.Column(db.Text)
+    symptoms_report = db.Column(db.Text)
+    medication_report = db.Column(db.Text)
+    other_remarks = db.Column(db.Text)
+    lab_report = db.Column(db.Text)
+    status = db.Column(db.Integer)
+    created_on = db.Column(db.DateTime, server_default=db.func.now())
+    updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+
+
+class Charges(db.Model):
+    __tablename__='charges'
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id=db.Column(db.Integer,db.ForeignKey('patients.id'))
+    inventory_id=db.Column(db.Integer,db.ForeignKey('inventory.id'))
+    service_offered=db.Column(db.String(80),  nullable=True)
+    cost=db.Column(db.Integer, nullable=True)
+    time_of_offering=db.Column(db.DateTime(timezone=True),server_default=func.now())
+
+class Inventory(db.Model):
+    __tablename__ = 'inventory'
+    id = db.Column(db.Integer, primary_key=True)
+    name=db.Column(db.String(80),  nullable=False)
+    category=db.Column(db.String(80), nullable=False)
+    selling_price = db.Column(db.Integer, nullable=False)
+    rel = db.relationship('Charges', backref='inventory', lazy=True) 
+
+
+class Patient(db.Model):
+    __tablename__ = 'patients'    
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
+    first_name = db.Column(db.String(80), unique=False, nullable=False)
+    last_name = db.Column(db.String(80), unique=False, nullable=False)
+    gender = db.Column(db.String(80), unique=False, nullable=False)
+    address = db.Column(db.String(80), unique=False, nullable=False)
+    telephone = db.Column(db.String(80), unique=False, nullable=False)
+    guardian_name=db.Column(db.String(80), unique=False, nullable=True)
+    guardian_phone_no=db.Column(db.String(80), unique=False, nullable=True)
+    appointments = db.relationship('Appointment', backref='patients', lazy=True)
+    appointmen = db.relationship('Charges', backref='patients', lazy=True)
+    appointme = db.relationship('Visitors', backref='patients', lazy=True)
+
+class Role(db.Model):
+    __tablename__ = 'roles'    
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+
+    staff = db.relationship('Staff', backref='roles', lazy=True)
+
+class Staff(db.Model):
+    __tablename__ = 'staff'    
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
+    first_name = db.Column(db.String(80), unique=False, nullable=False)
+    last_name = db.Column(db.String(80), unique=False, nullable=False)
+    department = db.Column(db.String(80), unique=False, nullable=False)
+    role = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    telephone = db.Column(db.String(80), unique=False, nullable=False)
+    email = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String, nullable = False)
+
+    appointments = db.relationship('Appointment', backref='staff', lazy=True)
+    # patients = db.relationship('Patient', backref='staff', lazy=True)
+
+    def insert(self):
+        db.add(self)
+        db.commit()
+
+        return self
+
+    # @classmethod
+    # def find_user_byId(cls, user_id):
+    #     return cls.query.filter_by(id = user_id).first()
+
+    # authenticate password
+    @classmethod
+    def check_password(cls,email,password):
+        record = cls.query.filter_by(email=email).first()
+
+        if record and check_password_hash(record.password, password):
+            return True
+        else:
+            return False
+
+    @classmethod
+    def check_email_exists(cls, email):
+        record = cls.query.filter_by(email = email).first()
+
+        if record:
+            return True
+        else:
+            return False
+
+    # fetch by email
+    @classmethod
+    def fetch_by_email(cls,email):
+        return cls.query.filter_by(email = email).first()
+
+class Visitors(db.Model):
+    __tablename__='visitors'
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id=db.Column(db.Integer,db.ForeignKey('patients.id'))
+    name=db.Column(db.String(80),  nullable=True)
+    gender=db.Column(db.String(80),  nullable=True)
+    visitor_pnone=db.Column(db.String(80),  nullable=True)
+    visiting_time=db.Column(db.DateTime(timezone=True),server_default=func.now())
 # db.create_all()
 @app.before_first_request
 def create_tables():
