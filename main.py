@@ -77,6 +77,12 @@ def dashboard():
 
     return render_template('dashboard.html', logged_in = logged_in, first_name = first_name, last_name = last_name, patient_count = patient_count, staff_count = staff_count, appointment_count = appointment_count, doctor_count = doctor_count)
 
+
+@app.route('/help', methods = ['GET', 'POST'])
+def help():
+
+    return render_template('help.html')
+
 @app.route('/patients', methods = ['GET', 'POST'])
 @login_required
 def patients():
