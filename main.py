@@ -2,13 +2,15 @@
 from unicodedata import category
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import os
 from datetime import date
 from sqlalchemy import func
 import psycopg2
-
+import json, ast
+from datetime import datetime
 app = Flask(__name__)
 
 from configs.base_config import *
@@ -23,14 +25,14 @@ cur = conn.cursor()
 
 db = SQLAlchemy(app)
 
-from models.Patient import Patient
-from models.Staff import Staff
-from models.Appointment import Appointment
-from models.Role import Role
-from models.charges import Charges
-from models.visitors import Visitors
-from models.inventory import Inventory
-from utils.init_roles import *
+# from models.Patient import Patient
+# from models.Staff import Staff
+# from models.Appointment import Appointment
+# from models.Role import Role
+# from models.charges import Charges
+# from models.visitors import Visitors
+# from models.inventory import Inventory
+# from utils.init_roles import *
 
 
 class Appointment(db.Model):
@@ -80,6 +82,7 @@ class Patient(db.Model):
     telephone = db.Column(db.String(80), unique=False, nullable=False)
     guardian_name=db.Column(db.String(80), unique=False, nullable=True)
     guardian_phone_no=db.Column(db.String(80), unique=False, nullable=True)
+    registering_time=db.Column(db.DateTime(timezone=True),server_default=func.now())
     appointments = db.relationship('Appointment', backref='patients', lazy=True)
     appointmen = db.relationship('Charges', backref='patients', lazy=True)
     appointme = db.relationship('Visitors', backref='patients', lazy=True)
@@ -149,9 +152,22 @@ class Visitors(db.Model):
     gender=db.Column(db.String(80),  nullable=True)
     visitor_pnone=db.Column(db.String(80),  nullable=True)
     visiting_time=db.Column(db.DateTime(timezone=True),server_default=func.now())
-# db.create_all()
+
+def seeding():
+    roles = ['Admin', 'Medical Staff', 'Nurse', 'Lab Technician']
+
+    for role in roles:        
+        exists = Role.query.filter_by(name = role).first()
+
+        if not exists:
+            new_role = Role(name = role)
+            db.session.add(new_role)
+            db.session.commit()
+db.create_all()
+# 
 @app.before_first_request
 def create_tables():
+
     # db.drop_all()
     db.create_all()
 
@@ -677,11 +693,91 @@ def inventory():
 def guardian():
     patients = Patient.query.all()
     return render_template("guardians.html",patients=patients)
+
+@app.route("/visitorrangeform")
+def vis_range():
+    return render_template('visitorrange.html')
+
+@app.route('/visitor_report',methods= ["POST","GET"]) 
+def vis_repo():
+    if request.method=="POST":
+        startdate=request.form['startdate']
+        enddate=request.form['enddate']
+        data={"startdate":startdate,"enddate":enddate}
+        return redirect(url_for('vis_repo',x=data))
+    else:
+        # try:
+            x= request.args['x']                                  
+            d = ast.literal_eval(x) 
+            startdate=d["startdate"]   
+            enddate=d["enddate"]      
+            print(type(startdate)) 
+            x=datetime.strptime(startdate, '%Y-%m-%dT%H:%M')
+            y=datetime.strptime(enddate, '%Y-%m-%dT%H:%M')
+            visitors=Visitors.query.filter(Visitors.visiting_time.between(startdate, enddate)).all()
+            print(visitors)        
+            return render_template("visitorrepo.html",visitors=visitors)
+
+
+@app.route("/patientrangeform")
+def pat_range():
+    return render_template('patientrange.html')
+
+
+@app.route('/patient_report',methods= ["POST","GET"]) 
+def pat_repo():
+    if request.method=="POST":
+        startdate=request.form['startdate']
+        enddate=request.form['enddate']
+        data={"startdate":startdate,"enddate":enddate}
+        return redirect(url_for('vis_repo',x=data))
+    else:
+        # try:
+            x= request.args['x']                                  
+            d = ast.literal_eval(x) 
+            startdate=d["startdate"]   
+            enddate=d["enddate"]      
+            print(type(startdate)) 
+            x=datetime.strptime(startdate, '%Y-%m-%dT%H:%M')
+            y=datetime.strptime(enddate, '%Y-%m-%dT%H:%M')
+            patients=Patient.query.filter(Patient.registering_time.between(startdate, enddate)).all()
+            print(patients)        
+            return render_template("patientrepo.html.html",patients=patients)
+        # except:
+        #     visitors=Visitors.query.all()
+        #     return render_template("visitorrepo.html",visitors=visitors)
+
+            # render_template("kra.html",d=d)
+
     
         
 
 
-    
+
+
+
+    # print(visitors)
+
+    #     name=request.form["name"]
+    #     basic=request.form["basic"]
+    #     benefits=request.form["benefits"]
+    #     p=(int(basic))
+    #     o=(int(benefits))
+    #     x=Payroll(p,o)
+    #     data = {"name":name,"gross_salary":x.gross_salary,"nssf":x.nssf_var,"taxable":x.taxable_pay,"paye":x.paye,"nhif":x.nhif,"deductions":x.deductions,"netpay":x.net_salary}
+    #     return redirect(url_for('netpay', x=data) )
+        
+    # else:
+        
+    #     try:  
+           
+    #     except:
+    #         if request.method=="GET":
+    #             d={}            
+    #             return render_template("kra.html",d=d)
+    #         else:
+    #             return render_template("kra.html",d=d)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

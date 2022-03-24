@@ -71,6 +71,7 @@
                 <th scope="col">Guardian_Telephone</th>
                 <th scope="col">Edit</th>
                 <th scope="col">Appointment History</th>
+                <th scope="col">Registering Time</th>
             </tr>
         </thead>
         <tbody>
@@ -83,6 +84,7 @@
                 <td>{{patient.telephone}}</td>
                 <td>{{patient.guardian_name}}</td>
                 <td>{{patient.guardian_phone_no}}</td>
+                
 
                 <td>
                     <a href="" type="button" class="btn btn-primary" data-bs-toggle="modal"
@@ -146,6 +148,7 @@
                         </a>
                     </div>
                 </td>
+                <td>{{patient.registering_time}}</td>
             </tr>
             {% endfor %}
         </tbody>
