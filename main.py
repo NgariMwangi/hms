@@ -730,7 +730,7 @@ def pat_repo():
         startdate=request.form['startdate']
         enddate=request.form['enddate']
         data={"startdate":startdate,"enddate":enddate}
-        return redirect(url_for('vis_repo',x=data))
+        return redirect(url_for('pat_repo',x=data))
     else:
         # try:
             x= request.args['x']                                  
@@ -742,7 +742,7 @@ def pat_repo():
             y=datetime.strptime(enddate, '%Y-%m-%dT%H:%M')
             patients=Patient.query.filter(Patient.registering_time.between(startdate, enddate)).all()
             print(patients)        
-            return render_template("patientrepo.html.html",patients=patients)
+            return render_template("patientrepo.html",patients=patients)
         # except:
         #     visitors=Visitors.query.all()
         #     return render_template("visitorrepo.html",visitors=visitors)
