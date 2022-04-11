@@ -194,7 +194,7 @@ def dashboard():
     logged_in = session['logged_in']
     first_name = session['first_name']
     last_name = session['last_name']
-
+    print(first_name)
     patient_count = Patient.query.count()
     staff_count = Staff.query.count()
     doctor_count = Staff.query.filter_by(role = 2).count()
